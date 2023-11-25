@@ -5,13 +5,15 @@ services:
       context: .
       dockerfile: ./planner
     depends_on:
-      - worker
+      - gen_worker
+      - mult_worker
+      - add_worker
     networks:
       - mynetwork
     ports:
       - "3000:3000"
 
-  worker:
+  g_worker:
     build:
       context: .
       dockerfile: ./worker
@@ -19,6 +21,28 @@ services:
       - mynetwork
     deploy:
       replicas: 10
+
+  mult_worker:
+    depends_on:
+      - worker
+    networks:
+      - mynetwork
+    environment:
+      - ADD=false
+    deploy:
+      replicas: 10
+
+  add_worker:
+    depends_on:
+      - g_worker
+    networks:
+      - mynetwork
+    environment:
+      - MULT=false
+    deploy:
+      replicas: 10
+
+
 
 networks:
   mynetwork:

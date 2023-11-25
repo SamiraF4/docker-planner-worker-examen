@@ -13,8 +13,14 @@ const generateTasks = (i) =>
   new Array(i).fill(1).map((_) => ({ type: taskType(), args: args() }))
 
   let workers = []
-for (let i = 1; i <= 10; i++) {
-  const workerType = Math.random() < 0.5 ? 'mult' : 'add';
+  let gWorkers = workers.filter((worker) => worker.type === undefined);
+  let multWorkers = workers.filter((worker) => worker.type === 'mult');
+  let addWorkers = workers.filter((worker) => worker.type === 'add');
+  
+  for (let i = 1; i <= 10; i++) {
+    const randomValue = Math.random();
+    const workerType = randomValue < 0.33 ? 'mult' : (randomValue < 0.66 ? 'add' : 'gen');
+    console.log(workerType);
 
   const worker = {
     url: "http://docker-planner-worker-worker-"+ i + ":8080",
@@ -33,7 +39,7 @@ app.use(
 )
 
 app.get('/', (req, res) => {
-  res.send(JSON.stringify(workers))
+  res.send(JSON.stringify([...gWorkers, ...multWorkers, ...addWorkers]))
 })
 
 app.post('/register', (req, res) => {
@@ -51,7 +57,15 @@ const wait = (mili) =>
 
 const sendTask = async (worker, task) => {
   console.log(`=> ${worker.url}/${task.type}`, task)
-  workers = workers.filter((w) => w.id !== worker.id)
+  if (worker.type === undefined){
+    gWorkers = gWorkers.filter((w) => w.id !== worker.id)
+  }
+  if (worker.type === 'mult'){
+    multWorkers = multWorkers.filter((w) => w.id !== worker.id)
+  }
+  if (worker.type === 'add'){
+    addWorkers = addWorkers.filter((w) => w.id !== worker.id)
+  }
   tasks = tasks.filter((t) => t !== task)
   const request = fetch(`${worker.url}/${task.type}`, {
     method: 'POST',
