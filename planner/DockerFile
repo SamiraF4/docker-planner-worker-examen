@@ -2,5 +2,6 @@ FROM node:14
 WORKDIR /Users/samirafawaz/Documents/docker-planner-worker-examen/planner
 COPY package*.json main.js ./
 RUN npm install
+ENV TASKS=50
 EXPOSE 3000
 CMD [ "node", "main.js"]

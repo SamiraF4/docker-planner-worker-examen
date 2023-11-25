@@ -1,38 +1,25 @@
 version: '3'
-
 services:
   planner:
     build:
-      context : .
-      dockerfile : ./planner
-    ports: 
+      context: .
+      dockerfile: ./planner
+    depends_on:
+      - worker
+    networks:
+      - mynetwork
+    ports:
       - "3000:3000"
-    environment:
-      PORT: 3000
-      TASKS: 4
 
   worker:
-    build: 
-      context : .
-      dockerfile : ./worker
-    container_name: worker1
-    ports : 
-      - "8080:8080"
-    environment:
-      PORT: 8080
-      MULT: false
-      ADD: true
-      PLANNER: 'http://planner:3000'
+    build:
+      context: .
+      dockerfile: ./worker
+    networks:
+      - mynetwork
+    deploy:
+      replicas: 10
 
-  worker2:
-    build: 
-      context : .
-      dockerfile : ./worker
-    container_name: worker2
-    ports : 
-      - "8070:8080"
-    environment:
-      PORT: 8070
-      MULT: true
-      ADD: false
-      PLANNER: 'http://planner:3000'
+networks:
+  mynetwork:
+    driver: bridge
